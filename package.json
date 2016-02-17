@@ -1,0 +1,17 @@
+{
+  "name": "syntest",
+  "version": "0.1.0",
+  "description": "Syntetic events for UI",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/retro/syntest.git"
+  },
+  "author": "Mihael Konjevic",
+  "license": "MIT",
+  "homepage": "https://github.com/retro/syntest#readme",
+  "dependencies": {
+    "karma": "^0.13.21",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-cljs-test": "^0.1.0"
+  }
+}
