@@ -10,3 +10,8 @@
                  (fn []
                    (cljs.core.async.close! ~'runner)
                    (~'done)))))))
+
+(defmacro defsyntest [name & parts]
+  `(do
+     (cljs.test/deftest ~name
+       (syn-run! ~@parts))))

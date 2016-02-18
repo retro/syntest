@@ -2,9 +2,11 @@
   (:require [syntest.core :as s]
             [cljs.test :refer-macros [deftest is async]]
             [cljs.core.async :refer [<! timeout]]
-            [dommy.core :as dommy :refer-macros [sel sel1]])
+            [syntest.dom :as dom]
+            [cljsjs.jquery]
+            [jayq.core :as jayq])
   (:require-macros [cljs.core.async.macros :refer [go]]
-                   [syntest.core :refer [syn-run!]]))
+                   [syntest.core :refer [syn-run! defsyntest]]))
 
 (defn format-log-item [[type msg]]
   (case type
@@ -27,69 +29,59 @@
     [div cleanup]))
 
 (defn on-click! [el]
-  (set! (.-onclick el) #(dommy/set-text! (.-target %) "CLICKED")))
+  (set! (.-onclick el) #(jayq/text (jayq/$ el) "CLICKED")))
 
 (defn was-clicked? [el]
-  (= "CLICKED" (dommy/text el)))
+  (= "CLICKED" (jayq/text (jayq/$ el))))
 
 (defn el! [tag container]
-  (let [el (dommy/create-element tag)]
-    (dommy/append! container el)
+  (let [el (.createElement js/document tag)]
+    (jayq/append (jayq/$ container) el) 
     el))
 
-(deftest is-el? []
-  (is (s/is-el? (.createElement js/document "div")))
-  (is (not (s/is-el? "foo"))))
-
-(deftest get-el []
+(defsyntest clicking-el []
   (let [[container cleanup] (container!)
         div (el! "div" container)]
-    (dommy/add-class! div "foo")
-    (is (= (s/get-el div) div))
-    (is (= (s/get-el ".foo") div))
+    (on-click! div)
+    (<! (s/click! div))
+    (is (was-clicked? div))
     (cleanup)))
 
-(deftest clicking-el []
+(defsyntest clicking-el-by-selector []
   (let [[container cleanup] (container!)
         div (el! "div" container)]
+    (jayq/add-class (jayq/$ div) "foo")
     (on-click! div)
-    (syn-run!
-     (<! (s/click! div))
-     (is (was-clicked? div))
-     (cleanup))))
+    (<! (s/click! ".foo"))
+    (is (was-clicked? div))
+    (cleanup)))
 
-(deftest clicking-el-by-selector []
-  (let [[container cleanup] (container!)
-        div (el! "div" container)]
-    (dommy/add-class! div "foo")
-    (on-click! div)
-    (syn-run!
-     (<! (s/click! ".foo"))
-     (is (was-clicked? div))
-     (cleanup))))
-
- 
-(deftest clicking-el-with-timeout []
+(defsyntest clicking-el-with-timeout []
   (let [[container cleanup] (container!)
         bootstrap (fn []
                     (let [div (el! "div" container)]
                       (on-click! div)
-                      (dommy/add-class! div "bar")))]
+                      (jayq/add-class (jayq/$ div) "bar")))]
     (.setTimeout js/window bootstrap 1000)
-    (syn-run!
-      (<! (s/click! ".bar"))
-      (is (was-clicked? (sel1 ".bar")))
-      (cleanup))))
+    (<! (s/click! ".bar"))
+    (is (was-clicked? (first (jayq/$ ".bar"))))
+    (cleanup)))
 
-(deftest trying-to-click-non-existing-element []
-  (syn-run!
-    (<! (s/click! ".non-existing-element"))
-    (is false "This should never run")))
+(defsyntest trying-to-click-non-existing-element []
+  (<! (s/click! ".non-existing-element"))
+  (is false "This should never run"))
 
-(deftest typing []
+(defsyntest typing []
   (let [[container cleanup] (container!)
         bootstrap #(el! "input" container)]
     (.setTimeout js/window bootstrap 2000)
-    (syn-run!
-     (<! (s/type! "input" "testing"))
-     (is (= (dommy/value (sel1 "input")) "testing")))))
+    (<! (s/type! "input" "testing"))
+    (is (= (jayq/val (jayq/$ "input")) "testing"))
+    (cleanup)))
+
+(defsyntest action-sends-element-on-chan []
+  (let [[container cleanup] (container!)
+        div (el! "div" container)
+        chan-div (<! (s/click! div))]
+    (= div chan-div)
+    (cleanup)))

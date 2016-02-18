@@ -9,6 +9,8 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.170"]
                  [cljsjs/syn "0.1.2-0"]
+                 [cljsjs/jquery "2.1.4-0"]
+                 [jayq "2.5.4"]
                  [lein-doo "0.1.6"]
                  [prismatic/dommy "1.1.0"]
                  [org.clojure/core.async "0.2.374"
