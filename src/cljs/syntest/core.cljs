@@ -3,7 +3,8 @@
             [promesa.core :as p]
             [cljs.core.async :refer [timeout <! chan put!]]
             [syntest.util :as util]
-            ["syn" :as syn])
+            ["syn" :as syn]
+            [clojure.string :as str])
   (:require-macros [cljs.core.async.macros :refer [go-loop]]))
 
 (def default-timeout 6000)
@@ -16,15 +17,15 @@
   IMatcher
   (success-message [this]
     (str "Found element `" (util/el->selector selector)
-         "`with predicate `" name "`"
-         (when (not (empty? args)) " with args: " (pr-str args) "`")))
+         "` with predicate `" name "`"
+         (when (not (empty? args)) (str " with args: " (pr-str args) "`"))))
   (error-message [this]
     (str "Couldn't find element `" (util/el->selector selector)
          "` with predicate `" name "`"
-         (when (not (empty? args)) " with args: `" (pr-str args) "`"))))
+         (when (not (empty? args)) (str " with args: `" (pr-str args) "`")))))
 
-(defn first-el [res]
-  (.get (:result res) 0))
+(defn first-el [el]
+  (.get el 0))
 
 (defn update-res-message [res msg]
   (let [new-msg (str msg " ('" (:selector res) "')")]
@@ -92,7 +93,7 @@
   ([selector height wait-timeout]
    (wait-element (map->Matcher {:name "has-height"
                                 :selector selector
-                                :args {}
+                                :args height
                                 :predicate #(= height (.height %))
                                 :timeout wait-timeout}))))
 
@@ -101,7 +102,7 @@
   ([selector width wait-timeout]
    (wait-element (map->Matcher {:name "has-width"
                                 :selector selector
-                                :args {}
+                                :args width
                                 :predicate #(= width (.width %))
                                 :timeout wait-timeout}))))
 
@@ -110,7 +111,7 @@
   ([selector inner-height wait-timeout]
    (wait-element (map->Matcher {:name "has-inner-height"
                                 :selector selector
-                                :args {}
+                                :args inner-height
                                 :predicate #(= inner-height (.innerHeight %))
                                 :timeout wait-timeout}))))
 
@@ -119,7 +120,7 @@
   ([selector inner-width wait-timeout]
    (wait-element (map->Matcher {:name "has-inner-width"
                                 :selector selector
-                                :args {}
+                                :args inner-width
                                 :predicate #(= inner-width (.innerWidth %))
                                 :timeout wait-timeout}))))
 
@@ -128,7 +129,7 @@
   ([selector outer-height wait-timeout]
    (wait-element (map->Matcher {:name "has-outer-height"
                                 :selector selector
-                                :args {}
+                                :args outer-height
                                 :predicate #(= outer-height (.outerHeight %))
                                 :timeout wait-timeout}))))
 
@@ -137,7 +138,7 @@
   ([selector outer-width wait-timeout]
    (wait-element (map->Matcher {:name "has-outer-width"
                                 :selector selector
-                                :args {}
+                                :args outer-width
                                 :predicate #(= outer-width (.outerWidth %))
                                 :timeout wait-timeout}))))
 
@@ -146,7 +147,7 @@
   ([selector scroll-top wait-timeout]
    (wait-element (map->Matcher {:name "has-scroll-top"
                                 :selector selector
-                                :args {}
+                                :args scroll-top
                                 :predicate #(= scroll-top (.scrollTop %))
                                 :timeout wait-timeout}))))
 
@@ -155,7 +156,7 @@
   ([selector scroll-left wait-timeout]
    (wait-element (map->Matcher {:name "has-scroll-left"
                                 :selector selector
-                                :args {}
+                                :args scroll-left
                                 :predicate #(= scroll-left (.scrollLeft %))
                                 :timeout wait-timeout}))))
 
@@ -172,7 +173,7 @@
   ([selector coordinates wait-timeout]
    (wait-element (map->Matcher {:name "has-scroll-left"
                                 :selector selector
-                                :args {}
+                                :args coordinates
                                 :predicate #(coordinates-predicate (.position %) coordinates)
                                 :timeout wait-timeout}))))
 
@@ -181,8 +182,20 @@
   ([selector coordinates wait-timeout]
    (wait-element (map->Matcher {:name "has-scroll-left"
                                 :selector selector
-                                :args {}
+                                :args coordinates
                                 :predicate #(coordinates-predicate (.offset %) coordinates)
+                                :timeout wait-timeout}))))
+
+(defn has-value?
+  ([selector value] (has-value? selector value false))
+  ([selector value trim?] (has-value? selector value trim? default-timeout))
+  ([selector value trim? wait-timeout]
+   (wait-element (map->Matcher {:name "has-value"
+                                :selector selector
+                                :args value
+                                :predicate (if trim?
+                                             #(= (str/trim value) (str/trim (.val %)))
+                                             #(= value (.val %)))
                                 :timeout wait-timeout}))))
 
 (defn syn-perform! [selector action wait-timeout]

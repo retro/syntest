@@ -21,5 +21,8 @@
                  (instance? util/Error res) (do
                                               (is (= true (:message res)))
                                               (done))
+                 (and (seq res) (= :error (first res))) (do
+                                                          (is (= true (last res)))
+                                                          (done))
                  :else (recur (rest a) last-el)))
              (done)))))

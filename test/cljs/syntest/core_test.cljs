@@ -16,14 +16,21 @@
   (let [[div cleanup] (make-container!)]
     (set! (.-innerHTML div) "<article></article>")
     (synasync [el]
-     (s/existing? "article")
-     (s/existing? el)
-     (cleanup))))
+              (s/existing? "article")
+              (s/existing? el)
+              (cleanup))))
 
 (deftest find-element-with-delay
   (let [[div cleanup] (make-container!)]
     (js/setTimeout #(set! (.-innerHTML div) "<article><article>") 1000)
     (synasync [el]
-     (s/existing? "article")
-     (cleanup))))
+              (s/existing? "article")
+              (cleanup))))
 
+(deftest type-into-el
+  (let [[div cleanup] (make-container!)]
+    (set! (.-innerHTML div) "<input>")
+    (synasync [el]
+              (s/existing? "input")
+              (s/type! el "Test")
+              (s/has-value? el "Test"))))
