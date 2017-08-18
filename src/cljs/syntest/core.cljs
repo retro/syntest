@@ -198,6 +198,15 @@
                                              #(= value (.val %)))
                                 :timeout wait-timeout}))))
 
+(defn satisfies-predicate?
+  ([selector predicate] (satisfies-predicate? selector predicate default-timeout))
+  ([selector predicate wait-timeout]
+   (wait-element (map->Matcher {:name "satisfies-predicate"
+                                :selector selector
+                                :args {}
+                                :predicate predicate
+                                :timeout wait-timeout}))))
+
 (defn syn-perform! [selector action wait-timeout]
   (->> (existing? selector wait-timeout)
        (p/map (fn [result]
