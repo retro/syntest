@@ -9,7 +9,7 @@
   <scm>
     <connection>scm:git:git://github.com/retro/syntest.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/retro/syntest.git</developerConnection>
-    <tag>b9254f3165209ad91f3a0c7eb603cd5b30e1bd09
+    <tag>33ed16c54403c865d5a85fab6d3b278550e4f7a5
 </tag>
     <url>https://github.com/retro/syntest</url>
   </scm>

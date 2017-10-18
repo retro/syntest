@@ -1,4 +1,4 @@
-(defproject syntest "0.1.0-SNAPSHOT"
+(defproject syntest "0.1.0"
   :dependencies [[org.clojure/clojure "1.9.0-alpha17"]
                  [org.clojure/clojurescript "1.9.854"]
                  [cljsjs/jquery "3.2.1-0"]
